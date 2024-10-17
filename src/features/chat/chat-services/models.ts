@@ -17,7 +17,9 @@ export interface ChatMessageModel {
 }
 
 export type ConversationStyle = "creative" | "balanced" | "precise";
-export type ChatType = "simple" | "web" | "document" | "data" | "mssql";
+export type ChatType = "simple" | "web" | "document" | "data" | "doc" | "mssql" | "gpts";
+export type ChatAPIModel = "GPT-3" | "GPT-4";
+export type ChatDoc = "DeptA" | "DeptB" | "DeptC" | "DeptD" | "";
 
 export type ChatRole = "system" | "user" | "assistant" | "function";
 
@@ -29,17 +31,34 @@ export interface ChatThreadModel {
   useName: string;
   isDeleted: boolean;
   chatType: ChatType;
+  chatDoc: ChatDoc;
   conversationStyle: ConversationStyle;
+  chatAPIModel: ChatAPIModel;
   chatOverFileName: string;
   type: "CHAT_THREAD";
+}
+
+export interface PromptModel {
+  id: string; 
+  createdAt: Date;
+  userId: string;
+  useName: string;
+  isDeleted: boolean;
+  threadId: string;
+  title: string;
+  content: string;
+  dept: string;
 }
 
 export interface PromptGPTBody {
   id: string; // thread id
   chatType: ChatType;
+  chatDoc: ChatDoc;
   conversationStyle: ConversationStyle;
+  chatAPIModel:ChatAPIModel;
   chatOverFileName: string;
 }
+
 
 export interface PromptGPTProps extends PromptGPTBody {
   messages: Message[];
@@ -59,4 +78,16 @@ export interface ServerActionResponse<T> {
   success: boolean;
   error: string;
   response: T;
+}
+
+
+export interface PromptList {
+  id: string;
+  title: string;
+  content: string;
+  dept: string;
+/*  createdAt: Date;
+  userId: string;
+  useName: string;
+  isDeleted: boolean;*/
 }

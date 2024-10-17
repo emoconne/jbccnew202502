@@ -15,20 +15,20 @@ import { UserProfile } from "../user-profile";
 
 import { useSession } from "next-auth/react";
 import { UpdateIndicator } from "../change-log/update-indicator";
-import { useMenuContext } from "./menu-context";
+import { usePromptContext } from "./prompt-context";
 
-export const MainMenu = () => {
+export const MainPrompt = () => {
   const { data: session } = useSession();
-  const { isMenuOpen, toggleMenu } = useMenuContext();
+  const { isPromptOpen, togglePrompt } = usePromptContext();
   return (
     <div className="flex flex-col justify-between p-2">
       <div className="flex gap-5  flex-col  items-center">
         <Button
-          onClick={toggleMenu}
+          onClick={togglePrompt}
           className="rounded-full w-[40px] h-[40px] p-1 text-primary"
           variant={"outline"}
         >
-          {isMenuOpen ? <PanelLeftClose /> : <PanelRightClose />}
+          {isPromptOpen ? <PanelLeftClose /> : <PanelRightClose />}
         </Button>
         <Button
           asChild

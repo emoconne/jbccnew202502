@@ -9,15 +9,15 @@ interface Prop {}
 export const StartNewChat: FC<Prop> = (props) => {
   return (
     <div className="grid grid-cols-5 w-full items-center container mx-auto max-w-3xl justify-center h-full gap-9">
-      <div className="col-span-1 gap-5 flex flex-col flex-1">
+      <div className="col-span-2 gap-5 flex flex-col flex-1">
         <img src="/ai-icon.png" className="w-36" />
       </div>
-      <Card className="col-span-4 flex flex-col gap-5 p-5 ">
+      <Card className="col-span-3 flex flex-col gap-5 p-5 ">
         <Typography variant="h4" className="text-primary">
         {AI_NAME}にようこそ！
         </Typography>
         <div className="flex flex-col gap-2">
-          <p className="">
+          <p className="text-sm text-muted-foreground">
           このChatGPT搭載のAIチャットボットは、社内利用限定で公開されています。
             まだまだ未熟なAIですが、皆様のご協力により、AIの成長を目指しています。
 

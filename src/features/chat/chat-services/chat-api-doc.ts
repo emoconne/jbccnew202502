@@ -28,7 +28,7 @@ ${context}
 question: ${userQuestion}`;
 };
 
-export const ChatAPIDocument = async (props: PromptGPTProps) => {
+export const ChatAPIDoc = async (props: PromptGPTProps) => {
   const { lastHumanMessage, id, chatThread } = await initAndGuardChatSession(
     props
   );
@@ -36,6 +36,16 @@ export const ChatAPIDocument = async (props: PromptGPTProps) => {
   const openAI = OpenAIInstance();
 
   const userId = await userHashedId();
+
+  let chatAPIModel = "";
+  if (props.chatAPIModel === "GPT-3") {
+    chatAPIModel = "gpt-35-turbo-16k";
+  }else{
+    chatAPIModel = "gpt-4o";
+  }
+  chatAPIModel = "gpt-4o-mini";
+ // console.log("Model_doc: ", process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME);
+ // console.log("PromptGPTProps_doc: ", props.chatAPIModel);
 
   const chatHistory = new CosmosDBChatMessageHistory({
     sessionId: chatThread.id,
@@ -74,7 +84,8 @@ export const ChatAPIDocument = async (props: PromptGPTProps) => {
           }),
         },
       ],
-      model: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
+      //model: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
+      model: chatAPIModel,
       stream: true,
     });
 
@@ -113,8 +124,8 @@ export const ChatAPIDocument = async (props: PromptGPTProps) => {
 
 const findRelevantDocuments = async (query: string, chatThreadId: string) => {
   const relevantDocuments = await similaritySearchVectorWithScore(query, 10, {
-    filter: ``,
+    filter: `chatType eq 'doc' `,
   });
-
   return relevantDocuments;
 };
+

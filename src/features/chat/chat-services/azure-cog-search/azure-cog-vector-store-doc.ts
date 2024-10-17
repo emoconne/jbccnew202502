@@ -1,6 +1,6 @@
 import { OpenAIEmbeddingInstance } from "@/features/common/openai";
 
-export interface AzureCogDocumentIndex {
+export interface AzureCogDocumentIndex_doc {
   id: string;
   pageContent: string;
   embedding?: number[];
@@ -24,7 +24,7 @@ type DocumentDeleteModel = {
   "@search.action": "delete";
 };
 
-export interface AzureCogDocument {}
+export interface AzureCogDocument_doc {}
 
 type AzureCogVectorField = {
   value: number[];
@@ -47,9 +47,9 @@ type AzureCogRequestObject = {
   top: number;
 };
 
-export const simpleSearch = async (
+export const simpleSearch_doc = async (
   filter?: AzureCogFilter
-): Promise<Array<AzureCogDocumentIndex & DocumentSearchModel>> => {
+): Promise<Array<AzureCogDocumentIndex_doc & DocumentSearchModel>> => {
   const url = `${baseIndexUrl()}/docs/search?api-version=${
     process.env.AZURE_SEARCH_API_VERSION
   }`;
@@ -65,17 +65,17 @@ export const simpleSearch = async (
     method: "POST",
     body: JSON.stringify(searchBody),
   })) as DocumentSearchResponseModel<
-    AzureCogDocumentIndex & DocumentSearchModel
+    AzureCogDocumentIndex_doc & DocumentSearchModel
   >;
 
   return resultDocuments.value;
 };
 
-export const similaritySearchVectorWithScore = async (
+export const similaritySearchVectorWithScore_doc = async (
   query: string,
   k: number,
   filter?: AzureCogFilter
-): Promise<Array<AzureCogDocumentIndex & DocumentSearchModel>> => {
+): Promise<Array<AzureCogDocumentIndex_doc & DocumentSearchModel>> => {
   const openai = OpenAIEmbeddingInstance();
 
   const embeddings = await openai.embeddings.create({
@@ -100,22 +100,22 @@ export const similaritySearchVectorWithScore = async (
     method: "POST",
     body: JSON.stringify(searchBody),
   })) as DocumentSearchResponseModel<
-    AzureCogDocumentIndex & DocumentSearchModel
+    AzureCogDocumentIndex_doc & DocumentSearchModel
   >;
 
   return resultDocuments.value;
 };
 
-export const indexDocuments = async (
-  documents: Array<AzureCogDocumentIndex>
+export const indexDocuments_doc = async (
+  documents: Array<AzureCogDocumentIndex_doc>
 ): Promise<void> => {
    
   const url = `${baseIndexUrl()}/docs/index?api-version=${
     process.env.AZURE_SEARCH_API_VERSION
   }`;
 
-  await embedDocuments(documents);
-  const documentIndexRequest: DocumentSearchResponseModel<AzureCogDocumentIndex> =
+  await embedDocuments_doc(documents);
+  const documentIndexRequest: DocumentSearchResponseModel<AzureCogDocumentIndex_doc> =
     {
       value: documents,
     };
@@ -126,10 +126,10 @@ export const indexDocuments = async (
   });
 };
 
-export const deleteDocuments = async (chatThreadId: string): Promise<void> => {
+export const deleteDocuments_doc = async (chatThreadId: string): Promise<void> => {
   // find all documents for chat thread
 
-  const documentsInChat = await simpleSearch({
+  const documentsInChat = await simpleSearch_doc({
     filter: `chatThreadId eq '${chatThreadId}'`,
   });
 
@@ -155,8 +155,8 @@ export const deleteDocuments = async (chatThreadId: string): Promise<void> => {
   );
 };
 
-export const embedDocuments = async (
-  documents: Array<AzureCogDocumentIndex>
+export const embedDocuments_doc = async (
+  documents: Array<AzureCogDocumentIndex_doc>
 ) => {
   const openai = OpenAIEmbeddingInstance();
 
@@ -208,7 +208,7 @@ const fetcher = async (url: string, init?: RequestInit) => {
   return await response.json();
 };
 
-export const ensureIndexIsCreated = async (): Promise<void> => {
+export const ensureIndexIsCreated_doc = async (): Promise<void> => {
   const url = `${baseIndexUrl()}?api-version=${
     process.env.AZURE_SEARCH_API_VERSION
   }`;

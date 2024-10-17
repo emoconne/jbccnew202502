@@ -1,6 +1,10 @@
 import { OpenAI } from "openai";
 
+import { PromptGPTProps } from "../chat/chat-services/models";
+
 export const OpenAIInstance = () => {
+
+    
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
     baseURL: `https://${process.env.AZURE_OPENAI_API_INSTANCE_NAME}.openai.azure.com/openai/deployments/${process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME}`,

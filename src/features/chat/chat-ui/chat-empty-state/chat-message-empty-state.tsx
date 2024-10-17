@@ -3,8 +3,10 @@ import { Card } from "@/components/ui/card";
 import { FC } from "react";
 import { useChatContext } from "../chat-context";
 import { ChatFileUI } from "../chat-file/chat-file-ui";
+import { ChatFileUI_doc } from "../chat-file/chat-file-ui-doc";
 import { ChatStyleSelector } from "./chat-style-selector";
 import { ChatTypeSelector } from "./chat-type-selector";
+import { ChatAPISelector } from "./chat-api-selector";
 import { AI_NAME } from "@/features/theme/customise";
 import { useSession } from "next-auth/react";
 
@@ -17,7 +19,7 @@ export const ChatMessageEmptyState: FC<Prop> = (props) => {
   const { showFileUpload } = fileState;
 
   return (
-    <div className="grid grid-cols-1 w-full items-center container mx-auto max-w-3xl justify-center h-full gap-9">
+    <div className="grid grid-cols-1 w-full items-center container mx-auto max-w-4xl justify-center h-full gap-9">
       <Card className="col-span-3 flex flex-col gap-5 p-5 ">
         <Typography variant="h4" className="text-primary">
           {AI_NAME}にようこそ！
@@ -42,7 +44,9 @@ export const ChatMessageEmptyState: FC<Prop> = (props) => {
           </p>
           <ChatTypeSelector disable={false} />
         </div>
-        {showFileUpload === "data" && <ChatFileUI />}
+        {(showFileUpload === "data") && <ChatFileUI />} 
+        {((showFileUpload === "doc") && session?.user?.isAdmin) && <ChatFileUI_doc />} 
+        
       </Card>
     </div>
   );

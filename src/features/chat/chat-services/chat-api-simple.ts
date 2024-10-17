@@ -8,6 +8,13 @@ import { PromptGPTProps } from "./models";
 
 export const ChatAPISimple = async (props: PromptGPTProps) => {
   const { lastHumanMessage, chatThread } = await initAndGuardChatSession(props);
+  let chatAPIModel = "";
+  if (props.chatAPIModel === "GPT-3") {
+    chatAPIModel = "gpt-35-turbo-16k";
+  }else{
+    chatAPIModel = "gpt-4o";
+  }
+  chatAPIModel = "gpt-4o-mini";
 
   const openAI = OpenAIInstance();
 
@@ -37,7 +44,7 @@ export const ChatAPISimple = async (props: PromptGPTProps) => {
         },
         ...topHistory,
       ],
-      model: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
+      model: chatAPIModel, //process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
       stream: true,
     });
 

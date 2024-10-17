@@ -1,9 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-// CSV Download
-//import {downloadCSV} from "../common/csv";
-// import { useState } from "react";
-
+import DownloadCSV from "@/features/reporting/csvDownload";
 import {
   Table,
   TableBody,
@@ -14,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { FindAllChatThreadsForReporting } from "./reporting-service";
+import { FindAllChatThreadsForReporting , FindAllChat } from "./reporting-service";
 
 export type ReportingProp = {
   searchParams: {
@@ -22,6 +19,7 @@ export type ReportingProp = {
     pageNumber?: number;
   };
 };
+
 
 export const Reporting = async (props: ReportingProp) => {
   let _pageNumber = Number(props.searchParams.pageNumber ?? 0);
@@ -34,28 +32,24 @@ export const Reporting = async (props: ReportingProp) => {
     pageSize,
     pageNumber
   );
+  const { resources: chatThreads_all } = await FindAllChat();
 
   const hasMoreResults = chatThreads && chatThreads.length === pageSize;
-// CSV Download
-
-
- // const [ isProcessing, setIsProcessing ] = useState( false );
 
   return (
     <Card className="h-full flex pt-8 overflow-y-auto">
       <div className="container mx-auto max-w-5xl space-y-8">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">会話履歴を表示しています。</h2>
-          <p className="text-muted-foreground">全ユーザーの会話履歴（管理者限定機能）　　　　
-          <button /*onClick={() => downloadCSV()}*/>Download CSV</button>
-          </p>
+          <p className="text-muted-foreground">全ユーザーの当月の会話履歴（管理者限定機能）</p>
+          <DownloadCSV resources={chatThreads_all} />
         </div>
         <div className="flex items-center space-x-2">
           <Card className="flex-1">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[200px]">会話日時</TableHead>
+                  <TableHead>会話日時</TableHead>
                   <TableHead className="w-[200px]">ユーザー名</TableHead>
                   <TableHead className="mw-[300px]">タイトル</TableHead>
                   <TableHead className="w-[200px]">スレッドID</TableHead>

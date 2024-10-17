@@ -7,6 +7,8 @@ import { useRef } from "react";
 import { useChatContext } from "./chat-context";
 import { ChatHeader } from "./chat-header";
 
+import ChatInput from "./chat-input/chat-input";
+
 export const ChatMessageContainer = () => {
   const { data: session } = useSession();
   const scrollRef = useRef<HTMLDivElement>(null);

@@ -2,23 +2,17 @@
 import "server-only";
 
 import { userHashedId, userSession } from "@/features/auth/helpers";
-import { FindAllChats } from "@/features/chat/chat-services/chat-service";
+//import { FindAllPrompts } from "@/features/chat/chat-services/prompt-service";
 import { uniqueId } from "@/features/common/util";
 import { SqlQuerySpec } from "@azure/cosmos";
-import { CosmosDBContainer } from "../../common/cosmos";
-import { deleteDocuments } from "./azure-cog-search/azure-cog-vector-store";
-import { FindAllChatDocuments } from "./chat-document-service";
+import { CosmosDBContainer } from "../../common/cosmos-prompt";
 import {
   CHAT_THREAD_ATTRIBUTE,
-  ChatAPIModel,
-  ChatMessageModel,
-  ChatThreadModel,
-  ChatType,
-  ConversationStyle,
   PromptGPTProps,
+  PromptModel,
 } from "./models";
-
-export const FindAllChatThreadForCurrentUser = async () => {
+/*
+export const FindAllPromptThreadForCurrentUser = async () => {
   const container = await CosmosDBContainer.getInstance().getContainer();
 
   const querySpec: SqlQuerySpec = {
@@ -41,14 +35,14 @@ export const FindAllChatThreadForCurrentUser = async () => {
   };
 
   const { resources } = await container.items
-    .query<ChatThreadModel>(querySpec, {
+    .query<PromptModel>(querySpec, {
       partitionKey: await userHashedId(),
     })
     .fetchAll();
   return resources;
 };
 
-export const FindChatThreadByID = async (id: string) => {
+export const FindPromptThreadByID = async (id: string) => {
   const container = await CosmosDBContainer.getInstance().getContainer();
 
   const querySpec: SqlQuerySpec = {
@@ -75,36 +69,22 @@ export const FindChatThreadByID = async (id: string) => {
   };
 
   const { resources } = await container.items
-    .query<ChatThreadModel>(querySpec)
+    .query<PromptModel>(querySpec)
     .fetchAll();
 
   return resources;
 };
 
-export const SoftDeleteChatThreadByID = async (chatThreadID: string) => {
+export const SoftDeletePromptThreadByID = async (chatThreadID: string) => {
   const container = await CosmosDBContainer.getInstance().getContainer();
-  const threads = await FindChatThreadByID(chatThreadID);
+  const threads = await FindPromptThreadByID(chatThreadID);
 
   if (threads.length !== 0) {
-    const chats = await FindAllChats(chatThreadID);
+    const chats = await FindAllPrompts(chatThreadID);
 
     chats.forEach(async (chat) => {
       const itemToUpdate = {
         ...chat,
-      };
-      itemToUpdate.isDeleted = true;
-      await container.items.upsert(itemToUpdate);
-    });
-
-    const chatDocuments = await FindAllChatDocuments(chatThreadID);
-
-    if (chatDocuments.length !== 0) {
-      await deleteDocuments(chatThreadID);
-    }
-
-    chatDocuments.forEach(async (chatDocument) => {
-      const itemToUpdate = {
-        ...chatDocument,
       };
       itemToUpdate.isDeleted = true;
       await container.items.upsert(itemToUpdate);
@@ -120,32 +100,34 @@ export const SoftDeleteChatThreadByID = async (chatThreadID: string) => {
   }
 };
 
-export const EnsureChatThreadIsForCurrentUser = async (
+export const EnsurePromptThreadIsForCurrentUser = async (
   chatThreadID: string
 ) => {
-  const modelToSave = await FindChatThreadByID(chatThreadID);
+  const modelToSave = await FindPromptThreadByID(chatThreadID);
   if (modelToSave.length === 0) {
-    throw new Error("Chat thread not found");
+    throw new Error("Prompt thread not found");
   }
 
   return modelToSave[0];
 };
 
-export const UpsertChatThread = async (chatThread: ChatThreadModel) => {
+*/
+/*
+export const UpsertPrompt = async (prompt: PromptModel) => {
   const container = await CosmosDBContainer.getInstance().getContainer();
-  const updatedChatThread = await container.items.upsert<ChatThreadModel>(
-    chatThread
+  const updatedChatThread = await container.items.upsert<PromptModel>(
+    prompt
   );
 
   if (updatedChatThread === undefined) {
-    throw new Error("Chat thread not found");
+    throw new Error("prompt not found");
   }
 
   return updatedChatThread;
 };
 
-export const updateChatThreadTitle = async (
-  chatThread: ChatThreadModel,
+export const updatePromptTitle = async (
+  prompt: PromptModel,
   messages: ChatMessageModel[],
   chatType: ChatType,
   conversationStyle: ConversationStyle,
@@ -154,54 +136,48 @@ export const updateChatThreadTitle = async (
   userMessage: string
 ) => {
   if (messages.length === 0) {
-    const updatedChatThread = await UpsertChatThread({
-      ...chatThread,
-      chatType: chatType,
-      chatOverFileName: chatOverFileName,
-      chatAPIModel: chatAPIModel,
-      conversationStyle: conversationStyle,
-      name: userMessage.substring(0, 30),
+    const updatedChatThread = await UpsertPrompt({
+      ...prompt,
     });
 
     return updatedChatThread.resource!;
   }
 
-  return chatThread;
+  return prompt;
 };
-
-export const CreateChatThread = async () => {
-  const modelToSave: ChatThreadModel = {
-    name: "new chat",
-    useName: (await userSession())!.name,
-    userId: await userHashedId(),
+*/
+export const CreatePromptThread = async (dept:string,title:string,content:string) => {
+  const modelToSave: PromptModel = {
     id: uniqueId(),
     createdAt: new Date(),
     isDeleted: false,
-    chatType: "simple",
-    conversationStyle: "balanced",
-    chatAPIModel: "GPT-3",
-    type: CHAT_THREAD_ATTRIBUTE,
-    chatOverFileName: "",
-    chatDoc: ""
+    userId: await userHashedId(),
+    useName: (await userSession())!.name,
+    title: title,
+    dept: dept,
+    threadId: "", // Add the missing property threadId
+    content: content // Add the missing property content
   };
 
   const container = await CosmosDBContainer.getInstance().getContainer();
-  const response = await container.items.create<ChatThreadModel>(modelToSave);
+  const response = await container.items.create<PromptModel>(modelToSave);
   return response.resource;
 };
 
-export const initAndGuardChatSession = async (props: PromptGPTProps) => {
-//export const initAndGuardChatSession = async () => {
-    const { messages, id, chatType, conversationStyle,chatAPIModel, chatOverFileName } = props;
+
+
+/*
+export const initAndGuardPromptSession = async (props: PromptGPTProps) => {
+  const { messages, id, chatType, conversationStyle,chatAPIModel, chatOverFileName } = props;
 
   //last message
   const lastHumanMessage = messages[messages.length - 1];
 
-  const currentChatThread = await EnsureChatThreadIsForCurrentUser(id);
-  const chats = await FindAllChats(id);
+  const currentPromptThread = await EnsurePromptThreadIsForCurrentUser(id);
+  const chats = await FindAllPrompts(id);
 
-  const chatThread = await updateChatThreadTitle(
-    currentChatThread,
+  const chatThread = await updatePromptThreadTitle(
+    currentPromptThread,
     chats,
     chatType,
     conversationStyle,
@@ -216,4 +192,4 @@ export const initAndGuardChatSession = async (props: PromptGPTProps) => {
     chats,
     chatThread,
   };
-};
+};*/

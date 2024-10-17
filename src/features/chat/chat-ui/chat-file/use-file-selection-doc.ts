@@ -1,15 +1,15 @@
 import { useGlobalMessageContext } from "@/features/global-message/global-message-context";
 import {
-  IndexDocuments,
-  UploadDocument,
-} from "../../chat-services/chat-document-service";
+  IndexDocuments_doc,
+  UploadDocument_doc,
+} from "../../chat-services/chat-document-service-doc";
 import { useChatContext } from "../chat-context";
 
 interface Props {
   id: string;
 }
 
-export const useFileSelection = (props: Props) => {
+export const useFileSelection_doc = (props: Props) => {
   const { setChatBody, chatBody, fileState } = useChatContext();
   const { setIsUploadingFile, setUploadButtonLabel } = fileState;
 
@@ -27,7 +27,7 @@ export const useFileSelection = (props: Props) => {
       setUploadButtonLabel("Uploading document...");
       formData.append("id", props.id);
       const file: File | null = formData.get("file") as unknown as File;
-      const uploadResponse = await UploadDocument(formData);
+      const uploadResponse = await UploadDocument_doc(formData);
       if (uploadResponse.success) {
         let index = 0;
 
@@ -38,7 +38,7 @@ export const useFileSelection = (props: Props) => {
             }]`
           );
           try {
-            const indexResponse = await IndexDocuments(
+            const indexResponse = await IndexDocuments_doc(
               file.name,
               [doc],
               props.id

@@ -21,11 +21,12 @@ const ChatRow: FC<ChatRowProps> = (props) => {
   const toggleIcon = () => {
     setIsIconChecked((prevState) => !prevState);
   };
-
+  
   const handleButtonClick = () => {
     toggleIcon();
     navigator.clipboard.writeText(props.message);
   };
+
 
   return (
     <div

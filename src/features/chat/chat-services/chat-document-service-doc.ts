@@ -10,10 +10,10 @@ import {
 } from "@azure/ai-form-recognizer";
 import { SqlQuerySpec } from "@azure/cosmos";
 import {
-  AzureCogDocumentIndex,
-  ensureIndexIsCreated,
-  indexDocuments,
-} from "./azure-cog-search/azure-cog-vector-store";
+  AzureCogDocumentIndex_doc,
+  ensureIndexIsCreated_doc,
+  indexDocuments_doc,
+} from "./azure-cog-search/azure-cog-vector-store-doc";
 import {
   CHAT_DOCUMENT_ATTRIBUTE,
   ChatDocumentModel,
@@ -24,11 +24,11 @@ import { isNotNullOrEmpty } from "./utils";
 
 const MAX_DOCUMENT_SIZE = 20000000;
 
-export const UploadDocument = async (
+export const UploadDocument_doc = async (
   formData: FormData
 ): Promise<ServerActionResponse<string[]>> => {
   try {
-    await ensureSearchIsConfigured();
+    await ensureSearchIsConfigured_doc();
 
     const { docs } = await LoadFile(formData);
     const splitDocuments = chunkDocumentWithOverlap(docs.join("\n"));
@@ -52,7 +52,7 @@ const LoadFile = async (formData: FormData) => {
     const file: File | null = formData.get("file") as unknown as File;
 
     if (file && file.size < MAX_DOCUMENT_SIZE) {
-      const client = initDocumentIntelligence();
+      const client = initDocumentIntelligence_doc();
 
       const blob = new Blob([file], { type: file.type });
 
@@ -89,32 +89,32 @@ const LoadFile = async (formData: FormData) => {
   throw new Error("Invalid file format or size. Only PDF files are supported.");
 };
 
-export const IndexDocuments = async (
+export const IndexDocuments_doc = async (
   fileName: string,
   docs: string[],
   chatThreadId: string
-): Promise<ServerActionResponse<AzureCogDocumentIndex[]>> => {
+): Promise<ServerActionResponse<AzureCogDocumentIndex_doc[]>> => {
   try {
-    const documentsToIndex: AzureCogDocumentIndex[] = [];
+    const documentsToIndex: AzureCogDocumentIndex_doc[] = [];
 
     for (const doc of docs) {
-      const docToAdd: AzureCogDocumentIndex = {
+      const docToAdd: AzureCogDocumentIndex_doc = {
         id: uniqueId(),
         chatThreadId,
         user: await userHashedId(),
         pageContent: doc,
         metadata: fileName,
-        chatType: "data",
-        deptName: "",
+        chatType: "doc",
+        deptName: "DeptA",
         embedding: [],
       };
 
       documentsToIndex.push(docToAdd);
     }
 
-    await indexDocuments(documentsToIndex);
+    await indexDocuments_doc(documentsToIndex);
 
-    await UpsertChatDocument(fileName, chatThreadId);
+    await UpsertChatDocument_doc(fileName, chatThreadId);
     return {
       success: true,
       error: "",
@@ -130,7 +130,7 @@ export const IndexDocuments = async (
   }
 };
 
-export const initDocumentIntelligence = () => {
+export const initDocumentIntelligence_doc = () => {
   const client = new DocumentAnalysisClient(
     process.env.AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT,
     new AzureKeyCredential(process.env.AZURE_DOCUMENT_INTELLIGENCE_KEY)
@@ -139,7 +139,7 @@ export const initDocumentIntelligence = () => {
   return client;
 };
 
-export const FindAllChatDocuments = async (chatThreadID: string) => {
+export const FindAllChatDocuments_doc = async (chatThreadID: string) => {
   const container = await CosmosDBContainer.getInstance().getContainer();
 
   const querySpec: SqlQuerySpec = {
@@ -168,7 +168,7 @@ export const FindAllChatDocuments = async (chatThreadID: string) => {
   return resources;
 };
 
-export const UpsertChatDocument = async (
+export const UpsertChatDocument_doc = async (
   fileName: string,
   chatThreadID: string
 ) => {
@@ -186,7 +186,7 @@ export const UpsertChatDocument = async (
   await container.items.upsert(modelToSave);
 };
 
-export const ensureSearchIsConfigured = async () => {
+export const ensureSearchIsConfigured_doc = async () => {
   var isSearchConfigured =
     isNotNullOrEmpty(process.env.AZURE_SEARCH_NAME) &&
     isNotNullOrEmpty(process.env.AZURE_SEARCH_API_KEY) &&
@@ -215,5 +215,5 @@ export const ensureSearchIsConfigured = async () => {
     throw new Error("Azure openai embedding variables are not configured.");
   }
 
-  await ensureIndexIsCreated();
+  await ensureIndexIsCreated_doc();
 };

@@ -7,9 +7,9 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { FileText } from "lucide-react";
-import { ChatFileUI } from "./chat-file-ui";
+import { ChatFileUI_doc } from "./chat-file-ui-doc";
 
-export const ChatFileSlider = () => {
+export const ChatFileSlider_doc = () => {
   return (
     <div>
       <Sheet>
@@ -20,10 +20,10 @@ export const ChatFileSlider = () => {
         </SheetTrigger>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>Upload File!</SheetTitle>
+            <SheetTitle>Upload File</SheetTitle>
           </SheetHeader>
           <div className="py-4">
-            <ChatFileUI />
+            <ChatFileUI_doc />
           </div>
         </SheetContent>
       </Sheet>

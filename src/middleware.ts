@@ -1,7 +1,7 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
-const requireAuth: string[] = ["/chat", "/api","/reporting", "/unauthorized"];
+const requireAuth: string[] = ["/chat", "/api","/reporting", "/prompt","/unauthorized"];
 const requireAdmin: string[] = ["/reporting"];
 
 

@@ -33,6 +33,26 @@ export const FindAllChatThreadsForReporting = async (
   return { resources };
 };
 
+// for csv Download
+export const FindAllChat = async () => {
+  const container = await CosmosDBContainer.getInstance().getContainer();
+
+  const querySpec: SqlQuerySpec = {
+    query: `SELECT * FROM root r WHERE r.type=@type ORDER BY r.createdAt DESC `,
+    parameters: [
+      {
+        name: "@type",
+        value: CHAT_THREAD_ATTRIBUTE,
+      },
+    ],
+  };
+
+  const { resources } = await container.items
+    .query<ChatThreadModel>(querySpec)
+    .fetchAll();
+  return { resources };
+};
+
 export const FindChatThreadByID = async (chatThreadID: string) => {
   const container = await CosmosDBContainer.getInstance().getContainer();
 

@@ -6,18 +6,30 @@ import { initAndGuardChatSession } from "./chat-thread-service";
 import { CosmosDBChatMessageHistory } from "./cosmosdb/cosmosdb";
 import { BingSearchResult } from "./Azure-bing-search/bing";
 import { PromptGPTProps } from "./models";
+import puppeteer from 'puppeteer'
+import { Lexend_Tera } from "next/font/google";
 
 export const ChatAPIWeb = async (props: PromptGPTProps) => {
   var snippet = "";
   var Prompt = "";
   var BingResult = "";
-  var url = "";
-
+  var WebinnerText = "";
   const { lastHumanMessage, chatThread } = await initAndGuardChatSession(props);
 
   const openAI = OpenAIInstance();
 
   const userId = await userHashedId();
+
+  let chatAPIModel = "";
+  if (props.chatAPIModel === "GPT-3") {
+    chatAPIModel = "gpt-35-turbo-16k";
+  }else{
+    chatAPIModel = "gpt-4o";
+  }
+
+  chatAPIModel = "gpt-4o-mini";
+//  console.log("Model_web: ", process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME);
+//  console.log("PromptGPTProps_web: ", props.chatAPIModel);
 
   const bing = new BingSearchResult();
   const searchResult = await bing.SearchWeb(lastHumanMessage.content);
@@ -27,27 +39,40 @@ export const ChatAPIWeb = async (props: PromptGPTProps) => {
   snippet += searchResult.webPages.value[2].snippet;
   snippet += searchResult.webPages.value[3].snippet;
   snippet += searchResult.webPages.value[4].snippet; 
-
-  url = searchResult.webPages.value[0].url + "\n" ;
-  url += searchResult.webPages.value[1].url + "\n";
-  url += searchResult.webPages.value[2].url + "\n";
-  url += searchResult.webPages.value[3].url + "\n";
-  url += searchResult.webPages.value[4].url + "\n";
-  
+  snippet += searchResult.webPages.value[5].snippet; 
+  snippet += searchResult.webPages.value[6].snippet; 
+  snippet += searchResult.webPages.value[7].snippet; 
+  snippet += searchResult.webPages.value[8].snippet; 
+  snippet += searchResult.webPages.value[9].snippet; 
 
 
+/*   // ブラウザを起動
+  const browser = await puppeteer.launch({ headless: true })
+  // 新しくページを開く
+  const page = await browser.newPage()
+  // 対象のページへ遷移
+  await page.goto(searchResult.webPages.value[0].url)
+  let pageText = await page.evaluate(() => document.body.innerText);
+  WebinnerText = '参照URL:'+ searchResult.webPages.value[0].url + '検索結果:'+ pageText.substring(0, 1000);
+  // 対象のページへ遷移
+  //await page.goto(searchResult.webPages.value[1].url)
+  //pageText += await page.evaluate(() => document.body.innerText);
+  //WebinnerText = '参照URL:'+ searchResult.webPages.value[0].url + '検索結果:'+ pageText.substring(0, 1000);
+　// ブラウザを閉じる
+  await browser.close()
+ */
   BingResult = + searchResult.webPages.value[0].name + "\n" + searchResult.webPages.value[0].snippet + "\n";
   BingResult += + searchResult.webPages.value[1].name + "\n" + searchResult.webPages.value[1].snippet + "\n";
   BingResult += + searchResult.webPages.value[2].name + "\n" + searchResult.webPages.value[2].snippet + "\n";
   BingResult += + searchResult.webPages.value[3].name + "\n" + searchResult.webPages.value[3].snippet + "\n";
   BingResult += + searchResult.webPages.value[4].name + "\n" + searchResult.webPages.value[4].snippet + "\n";
 
-  console.log(url);
+  //console.log(snippet) ;
   Prompt = "次の{問い合わせ}について、{Web検索結果}を元に2000文字程度で回答を生成してください。" ;
-   //Prompt += "### 回答サンプル　{問い合わせ}についてBing検索結果を元に回答を生成しました。参照したURLは{Web検索結果}をご参照ください" ; ;
-  Prompt += "### 問い合わせ "  + lastHumanMessage.content ;
-  Prompt += "### Web検索結果" + snippet; 
-  Prompt += "回答の最後に参照URLとして" + url + "を記載してください。" ;
+  Prompt += "【問い合わせ】 "  + lastHumanMessage.content ;
+  //Prompt += "【Web検索結果】" + snippet; 
+  Prompt += "【Web検索結果】" + snippet; 
+  //Prompt += "参照URLを回答最後に表示してください"; 
 
   const chatHistory = new CosmosDBChatMessageHistory({
     sessionId: chatThread.id,
@@ -76,11 +101,12 @@ export const ChatAPIWeb = async (props: PromptGPTProps) => {
           role: "user",
           content: Prompt,
         }
-        //...topHistory,
       ],
-      model: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
+      //model: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
+      model: chatAPIModel,
       stream: true,
     });
+
 
     const stream = OpenAIStream(response, {
       async onCompletion(completion) {
