@@ -47,8 +47,7 @@ export const ChatTypeSelector: FC<Prop> = (props) => {
         disabled={props.disable}
         >
         <FileText size={20} /> みんなび
-        </TabsTrigger>  
-
+        </TabsTrigger>   
         </TabsList>
     </Tabs>
   );

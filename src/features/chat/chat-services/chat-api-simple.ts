@@ -14,8 +14,7 @@ export const ChatAPISimple = async (props: PromptGPTProps) => {
   }else{
     chatAPIModel = "gpt-4o";
   }
-  chatAPIModel = "gpt-4o-mini";
-
+  chatAPIModel = "gpt-4o-mini"
   const openAI = OpenAIInstance();
 
   const userId = await userHashedId();

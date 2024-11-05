@@ -42,7 +42,7 @@ export const ChatAPIData = async (props: PromptGPTProps) => {
   }else{
     chatAPIModel = "gpt-4o";
   }
-  chatAPIModel = "gpt-4o-mini";
+  chatAPIModel = "gpt-4o-mini"
 //  console.log("Model_data: ", process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME);
 //  console.log("PromptGPTProps_data: ", props.chatAPIModel);
 
