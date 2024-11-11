@@ -9,6 +9,25 @@ import { PromptGPTProps } from "./models";
 
 const SYSTEM_PROMPT = `あなたは ${AI_NAME}です。ユーザーからの質問に対して日本語で丁寧に回答します。 \n`;
 
+// const CONTEXT_PROMPT = ({
+//   context,
+//   userQuestion,
+// }: {
+//   context: string;
+//   userQuestion: string;
+// }) => {
+//   return `
+// - Given the following extracted parts of a long document, create a final answer. \n
+// - If you don't know the answer, just say that you don't know. Don't try to make up an answer.\n
+// - You must always include a citation at the end of your answer and don't include full stop.\n
+// - Use the format for your citation {% citation items=[{name:"関連情報 1",id:"file id"}, {name:"関連情報 2",id:"file id"}] /%}\n 
+// ----------------\n 
+// context:\n 
+// ${context}
+// ----------------\n 
+// question: ${userQuestion}`;
+// };
+
 const CONTEXT_PROMPT = ({
   context,
   userQuestion,
@@ -16,16 +35,15 @@ const CONTEXT_PROMPT = ({
   context: string;
   userQuestion: string;
 }) => {
-  return `
-- Given the following extracted parts of a long document, create a final answer. \n
-- If you don't know the answer, just say that you don't know. Don't try to make up an answer.\n
-- You must always include a citation at the end of your answer and don't include full stop.\n
-- Use the format for your citation {% citation items=[{name:"filename 1",id:"file id"}, {name:"filename 2",id:"file id"}] /%}\n 
-----------------\n 
-context:\n 
-${context}
-----------------\n 
-question: ${userQuestion}`;
+  return ` - Given the following extracted parts of a long document, create a final answer. \n
+  - If you don't know the answer, just say that you don't know. Don't try to make up an answer.\n
+  - You must always include a citation at the end of your answer and don't include full stop.\n
+  - Use exactly this format for citation: {%citation items=[{name:"NAME",id:"ID"}]/%}\n
+  ----------------\n
+  context:\n
+  ${context}
+  ----------------\n
+  question: ${userQuestion}`;
 };
 
 export const ChatAPIDoc = async (props: PromptGPTProps) => {
