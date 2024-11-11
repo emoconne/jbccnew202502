@@ -272,7 +272,7 @@ const AZURE_SEARCH_INDEX = {
       type: "Edm.String",
       searchable: true,
       filterable: true,
-    },
+    },  
     {
       name: "embedding",
       type: "Collection(Edm.Single)",

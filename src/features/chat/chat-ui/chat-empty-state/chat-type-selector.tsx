@@ -46,7 +46,7 @@ export const ChatTypeSelector: FC<Prop> = (props) => {
         className="flex gap-1"
         disabled={props.disable}
         >
-        <FileText size={20} /> みんなび
+        <FileText size={20} /> 人事FAQ
         </TabsTrigger>   
         </TabsList>
     </Tabs>
