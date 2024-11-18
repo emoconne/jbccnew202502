@@ -22,7 +22,7 @@ export const CitationAction = async (
       </div>
       <div className="border rounded-sm p-2">
         <div className="font-bold">kintone link</div>
-        <a href={`https://jbccdemo.cybozu.com/k/16098/show#record=${firstResult.metadata}`} target="_blank">
+        <a href={`${firstResult.metadata}`} target="_blank">
           {firstResult.deptName}
         </a>
         </div>
