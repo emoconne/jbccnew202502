@@ -30,7 +30,7 @@ export const ChatDeptSelector: FC<Prop> = (props) => {
       <RadioGroup
         row
         aria-labelledby="dept-group-label"
-        defaultValue="hr"
+        defaultValue="all"
         name="radio-buttons-group"
         className="justify-end"
         onChange={(event) => onChatDocChange(event.target.value as ChatDoc)}
