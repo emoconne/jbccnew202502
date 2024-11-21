@@ -2,6 +2,7 @@ import { OpenAIEmbeddingInstance } from "@/features/common/openai";
 
 export interface AzureCogDocumentIndex {
   id: string;
+  source: string;
   pageContent: string;
   embedding?: number[];
   user: string;
@@ -251,6 +252,11 @@ const AZURE_SEARCH_INDEX = {
       type: "Edm.String",
       searchable: true,
       filterable: true,
+    },
+    {
+      name: "source",
+      searchable: true,
+      type: "Edm.String",
     },
     {
       name: "pageContent",

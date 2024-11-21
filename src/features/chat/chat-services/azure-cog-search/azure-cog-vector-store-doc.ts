@@ -2,6 +2,7 @@ import { OpenAIEmbeddingInstance } from "@/features/common/openai";
 
 export interface AzureCogDocumentIndex_doc {
   id: string;
+  source: string;
   pageContent: string;
   embedding?: number[];
   user: string;

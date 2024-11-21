@@ -49,6 +49,6 @@ export const ChatTypeSelector: FC<Prop> = (props) => {
         <FileText size={20} /> 社内FAQ
         </TabsTrigger>   
         </TabsList>
-    </Tabs>
+     </Tabs>
   );
 };

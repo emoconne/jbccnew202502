@@ -117,6 +117,8 @@ export const options: NextAuthOptions = {
  },
  useSecureCookies: process.env.NODE_ENV === "production",
 */
+
+  // useSecureCookies: process.env.NODE_ENV === "production",
 };
 
 export const handlers = NextAuth(options);

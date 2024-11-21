@@ -14,9 +14,11 @@ import {
   ChatMessageModel,
   ChatThreadModel,
   ChatType,
+  ChatDoc,
   ConversationStyle,
   PromptGPTProps,
 } from "./models";
+import { ChatAPIDoc } from "./chat-api-doc";
 
 export const FindAllChatThreadForCurrentUser = async () => {
   const container = await CosmosDBContainer.getInstance().getContainer();
@@ -148,6 +150,7 @@ export const updateChatThreadTitle = async (
   chatThread: ChatThreadModel,
   messages: ChatMessageModel[],
   chatType: ChatType,
+  chatDoc: ChatDoc,
   conversationStyle: ConversationStyle,
   chatAPIModel: ChatAPIModel,
   chatOverFileName: string,
@@ -157,6 +160,7 @@ export const updateChatThreadTitle = async (
     const updatedChatThread = await UpsertChatThread({
       ...chatThread,
       chatType: chatType,
+      chatDoc: chatDoc,
       chatOverFileName: chatOverFileName,
       chatAPIModel: chatAPIModel,
       conversationStyle: conversationStyle,
@@ -182,7 +186,7 @@ export const CreateChatThread = async () => {
     chatAPIModel: "GPT-3",
     type: CHAT_THREAD_ATTRIBUTE,
     chatOverFileName: "",
-    chatDoc: ""
+    chatDoc: "all"
   };
 
   const container = await CosmosDBContainer.getInstance().getContainer();
@@ -192,7 +196,7 @@ export const CreateChatThread = async () => {
 
 export const initAndGuardChatSession = async (props: PromptGPTProps) => {
 //export const initAndGuardChatSession = async () => {
-    const { messages, id, chatType, conversationStyle,chatAPIModel, chatOverFileName } = props;
+    const { messages, id, chatType, chatDoc,conversationStyle,chatAPIModel, chatOverFileName } = props;
 
   //last message
   const lastHumanMessage = messages[messages.length - 1];
@@ -204,6 +208,7 @@ export const initAndGuardChatSession = async (props: PromptGPTProps) => {
     currentChatThread,
     chats,
     chatType,
+    chatDoc,
     conversationStyle,
     chatAPIModel,
     chatOverFileName,

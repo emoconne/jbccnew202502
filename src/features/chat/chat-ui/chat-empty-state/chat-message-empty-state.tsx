@@ -6,6 +6,7 @@ import { ChatFileUI } from "../chat-file/chat-file-ui";
 import { ChatFileUI_doc } from "../chat-file/chat-file-ui-doc";
 import { ChatStyleSelector } from "./chat-style-selector";
 import { ChatTypeSelector } from "./chat-type-selector";
+import { ChatDeptSelector } from "./chat-dept-seelctor";
 import { ChatAPISelector } from "./chat-api-selector";
 import { AI_NAME } from "@/features/theme/customise";
 import { useSession } from "next-auth/react";
@@ -44,9 +45,12 @@ export const ChatMessageEmptyState: FC<Prop> = (props) => {
           </p>
           <ChatTypeSelector disable={false} />
         </div>
+        {(showFileUpload === "doc") && <ChatDeptSelector disable={false} />} 
         {(showFileUpload === "data") && <ChatFileUI />} 
-        {((showFileUpload === "doc") && session?.user?.isAdmin) && <ChatFileUI_doc />} 
-        
+       {/* {((showFileUpload === "doc") && session?.user?.isAdmin) && <ChatFileUI_doc />}  */}
+       <div className="flex flex-col gap-2">
+        </div>
+
       </Card>
     </div>
   );

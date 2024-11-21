@@ -102,10 +102,11 @@ export const IndexDocuments_doc = async (
         id: uniqueId(),
         chatThreadId,
         user: await userHashedId(),
+        source: fileName,
         pageContent: doc,
         metadata: fileName,
         chatType: "doc",
-        deptName: "DeptA",
+        deptName: "all",
         embedding: [],
       };
 

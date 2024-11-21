@@ -102,6 +102,7 @@ export const IndexDocuments = async (
         id: uniqueId(),
         chatThreadId,
         user: await userHashedId(),
+        source: fileName,
         pageContent: doc,
         metadata: fileName,
         chatType: "data",

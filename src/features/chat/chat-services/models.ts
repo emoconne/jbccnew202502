@@ -19,7 +19,7 @@ export interface ChatMessageModel {
 export type ConversationStyle = "creative" | "balanced" | "precise";
 export type ChatType = "simple" | "web" | "document" | "data" | "doc" | "mssql";
 export type ChatAPIModel = "GPT-3" | "GPT-4";
-export type ChatDoc = "DeptA" | "DeptB" | "DeptC" | "DeptD" | "";
+export type ChatDoc = "all" | "it" | "hr" | "fi" | "sales";
 
 export type ChatRole = "system" | "user" | "assistant" | "function";
 

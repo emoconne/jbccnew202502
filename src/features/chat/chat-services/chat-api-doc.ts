@@ -5,7 +5,7 @@ import { OpenAIStream, StreamingTextResponse } from "ai";
 import { similaritySearchVectorWithScore } from "./azure-cog-search/azure-cog-vector-store";
 import { initAndGuardChatSession } from "./chat-thread-service";
 import { CosmosDBChatMessageHistory } from "./cosmosdb/cosmosdb";
-import { PromptGPTProps } from "./models";
+import { PromptGPTProps , ChatDoc} from "./models";
 
 const SYSTEM_PROMPT = `あなたは ${AI_NAME}です。ユーザーからの質問に対して日本語で丁寧に回答します。 \n`;
 
@@ -65,6 +65,9 @@ export const ChatAPIDoc = async (props: PromptGPTProps) => {
  // console.log("Model_doc: ", process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME);
  // console.log("PromptGPTProps_doc: ", props.chatAPIModel);
 
+  let chatDoc = props.chatDoc;
+
+
   const chatHistory = new CosmosDBChatMessageHistory({
     sessionId: chatThread.id,
     userId: userId,
@@ -75,13 +78,13 @@ export const ChatAPIDoc = async (props: PromptGPTProps) => {
 
   const relevantDocuments = await findRelevantDocuments(
     lastHumanMessage.content,
-    id
+    chatDoc
   );
 
   const context = relevantDocuments
     .map((result, index) => {
       const content = result.pageContent.replace(/(\r\n|\n|\r)/gm, "");
-      const context = `[${index}]. よくある質問: ${result.deptName} \n file id: ${result.id} \n ${content}`;
+      const context = `[${index}]. よくある質問: ${result.source} \n file id: ${result.id} \n ${content}`;
       return context;
     })
     .join("\n------\n");
@@ -140,10 +143,9 @@ export const ChatAPIDoc = async (props: PromptGPTProps) => {
   }
 };
 
-const findRelevantDocuments = async (query: string, chatThreadId: string) => {
+const findRelevantDocuments = async (query: string, chatDoc: string) => {
   const relevantDocuments = await similaritySearchVectorWithScore(query, 10, {
-    filter: `chatType eq 'doc' `,
+    filter: `chatType eq 'doc' and deptName eq '${chatDoc}'`,
   });
   return relevantDocuments;
 };
-
