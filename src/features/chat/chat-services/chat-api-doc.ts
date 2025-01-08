@@ -69,7 +69,7 @@ export const ChatAPIDoc = async (props: PromptGPTProps) => {
         .toString()
         .replace(/(\r\n|\n|\r)/gm, "");
       return Buffer.from(
-        `[${index}]. よくある質問: ${result.source}\nfile id: ${result.id}\n${content}`,
+        `[${index}]. NAME: ${result.source}\nfile id: ${result.id}\n${content}`,
         'utf-8'
       ).toString();
     })

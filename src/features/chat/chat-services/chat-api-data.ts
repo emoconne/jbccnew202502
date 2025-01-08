@@ -15,10 +15,14 @@ const BASE_SYSTEM_PROMPT = `あなたは ${process.env.NEXT_PUBLIC_AI_NAME} で�
 const DOCS_SYSTEM_PROMPT = `${BASE_SYSTEM_PROMPT}
 以下のルールに従って回答を作成してください：
 1. 提供された文書の情報のみを使用して回答してください
-2. 文書に記載がない内容については「その情報は文書に含まれていません」と回答してください
-3. 回答の最後に必ず文書の引用を含めてください
-4. 引用は {%citation items=[{name:"文書名",id:"文書ID"}]/%} の形式で記載してください
-5. 推測や一般的な情報による補完は避けてください`;
+2. 回答はできるだけ詳細に明確にして、短い回答は避けてください
+3. 文書に記載がない内容については「その情報は文書に含まれていません」と回答してください
+4. URLは必ず <a href="URL" target="_blank" rel="nofollow">タイトル</a> の形式で記載してください
+5. 回答の最後に、検索された全ての文書の引用を含めてください（「引用：」という文字は不要です）
+6. 引用は検索された全ての文書に対して {%citation items=[{name:"文書名",id:"文書ID"}]/%} の形式で記載してください
+   - 実際の回答で使用していない文書も必ず含めてください
+   - 複数の文書がある場合は、改行して1行に1つずつ記載してください
+7. 推測や一般的な情報による補完は避けてください`;
 
 // 文書なしの場合のシステムプロンプト
 const NO_DOCS_SYSTEM_PROMPT = `${BASE_SYSTEM_PROMPT}
@@ -34,7 +38,9 @@ const constructDocsPrompt = (context: string, userQuestion: string) => {
 ${context}
 
 上記の文書に基づいて回答を作成してください。
-文書に含まれていない情報については「その情報は文書に含まれていません」と回答してください。`;
+文書に含まれていない情報については「その情報は文書に含まれていません」と回答してください。
+URLは必ず <a href="URL" target="_blank" rel="nofollow">タイトル</a> の形式で記載してください。
+検索された全ての文書を引用として含めてください。`;
 };
 
 // 文書なしの場合のコンテキストプロンプト
@@ -99,8 +105,8 @@ export const ChatAPIData = async (props: PromptGPTProps) => {
       ],
       model: chatAPIModel,
       stream: true,
-      temperature: 0.7,  // より決定論的な応答のために温度を下げる
-      presence_penalty: -0.5,  // 余分な情報の生成を抑制
+      temperature: 0.7,
+      presence_penalty: -0.5,
     });
 
     const stream = OpenAIStream(response, {
@@ -117,7 +123,7 @@ export const ChatAPIData = async (props: PromptGPTProps) => {
             content: completion,
             role: "assistant",
           },
-          hasValidDocs ? context : ""  // コンテキストは文書がある場合のみ保存
+          hasValidDocs ? context : ""
         );
       },
     });
