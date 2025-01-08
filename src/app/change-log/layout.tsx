@@ -1,11 +1,10 @@
 import { MainMenu } from "@/features/main-menu/menu";
-import { AI_NAME } from "@/features/theme/customise";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: AI_NAME,
-  description: AI_NAME,
+  title: process.env.NEXT_PUBLIC_AI_NAME,
+  description: process.env.NEXT_PUBLIC_AI_NAME,
 };
 
 export default async function RootLayout({

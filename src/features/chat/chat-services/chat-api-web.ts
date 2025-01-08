@@ -1,113 +1,179 @@
 import { userHashedId } from "@/features/auth/helpers";
 import { OpenAIInstance } from "@/features/common/openai";
-import { AI_NAME } from "@/features/theme/customise";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import { initAndGuardChatSession } from "./chat-thread-service";
 import { CosmosDBChatMessageHistory } from "./cosmosdb/cosmosdb";
 import { BingSearchResult } from "./Azure-bing-search/bing";
 import { PromptGPTProps } from "./models";
-import puppeteer from 'puppeteer'
-import { Lexend_Tera } from "next/font/google";
+import puppeteer from "puppeteer";
 
 export const ChatAPIWeb = async (props: PromptGPTProps) => {
-  var snippet = "";
-  var Prompt = "";
-  var BingResult = "";
-  var WebinnerText = "";
+  // Destructure and initialize variables
   const { lastHumanMessage, chatThread } = await initAndGuardChatSession(props);
-
   const openAI = OpenAIInstance();
-
   const userId = await userHashedId();
 
-  let chatAPIModel = "";
-  if (props.chatAPIModel === "GPT-3") {
-    chatAPIModel = "gpt-35-turbo-16k";
-  }else{
-    chatAPIModel = "gpt-4o";
-  }
+  // Select appropriate model
+  let chatAPIModel =
+    props.chatAPIModel === "GPT-3" ? "gpt-35-turbo-16k" : "gpt-4o-mini";
 
-  chatAPIModel = "gpt-4o-mini"
-//  console.log("Model_web: ", process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME);
-//  console.log("PromptGPTProps_web: ", props.chatAPIModel);
-
-  const bing = new BingSearchResult();
-  const searchResult = await bing.SearchWeb(lastHumanMessage.content);
-
-  snippet = searchResult.webPages.value[0].snippet;
-  snippet += searchResult.webPages.value[1].snippet;
-  snippet += searchResult.webPages.value[2].snippet;
-  snippet += searchResult.webPages.value[3].snippet;
-  snippet += searchResult.webPages.value[4].snippet; 
-  snippet += searchResult.webPages.value[5].snippet; 
-  snippet += searchResult.webPages.value[6].snippet; 
-  snippet += searchResult.webPages.value[7].snippet; 
-  snippet += searchResult.webPages.value[8].snippet; 
-  snippet += searchResult.webPages.value[9].snippet; 
-
-
-/*   // ブラウザを起動
-  const browser = await puppeteer.launch({ headless: true })
-  // 新しくページを開く
-  const page = await browser.newPage()
-  // 対象のページへ遷移
-  await page.goto(searchResult.webPages.value[0].url)
-  let pageText = await page.evaluate(() => document.body.innerText);
-  WebinnerText = '参照URL:'+ searchResult.webPages.value[0].url + '検索結果:'+ pageText.substring(0, 1000);
-  // 対象のページへ遷移
-  //await page.goto(searchResult.webPages.value[1].url)
-  //pageText += await page.evaluate(() => document.body.innerText);
-  //WebinnerText = '参照URL:'+ searchResult.webPages.value[0].url + '検索結果:'+ pageText.substring(0, 1000);
-　// ブラウザを閉じる
-  await browser.close()
- */
-  BingResult = + searchResult.webPages.value[0].name + "\n" + searchResult.webPages.value[0].snippet + "\n";
-  BingResult += + searchResult.webPages.value[1].name + "\n" + searchResult.webPages.value[1].snippet + "\n";
-  BingResult += + searchResult.webPages.value[2].name + "\n" + searchResult.webPages.value[2].snippet + "\n";
-  BingResult += + searchResult.webPages.value[3].name + "\n" + searchResult.webPages.value[3].snippet + "\n";
-  BingResult += + searchResult.webPages.value[4].name + "\n" + searchResult.webPages.value[4].snippet + "\n";
-
-  //console.log(snippet) ;
-  Prompt = "次の{問い合わせ}について、{Web検索結果}を元に2000文字程度で回答を生成してください。" ;
-  Prompt += "【問い合わせ】 "  + lastHumanMessage.content ;
-  //Prompt += "【Web検索結果】" + snippet; 
-  Prompt += "【Web検索結果】" + snippet; 
-  //Prompt += "参照URLを回答最後に表示してください"; 
-
+  // Initialize chat history first to use in search context
   const chatHistory = new CosmosDBChatMessageHistory({
     sessionId: chatThread.id,
     userId: userId,
   });
 
+  // Get recent chat history before adding new message
+  const history = await chatHistory.getMessages();
+  const topHistory = history.slice(history.length - 30, history.length);
+
+  // Initialize Bing Search with context from recent messages
+  const bing = new BingSearchResult();
+  const searchContext = topHistory
+    .slice(-3)
+    .map((msg) => msg.content)
+    .join(" ");
+  const searchResult = await bing.SearchWeb(
+    `${searchContext} ${lastHumanMessage.content}`
+  );
+
+  // Enhanced web page content extraction with proper URL handling
+  const webPageContents = await Promise.all(
+    searchResult.webPages.value.slice(0, 5).map(async (page: any) => {
+      try {
+        const browser = await puppeteer.launch({ headless: true });
+        const pageInstance = await browser.newPage();
+        await pageInstance.goto(page.url, {
+          waitUntil: "networkidle0",
+          timeout: 30000,
+        });
+
+        // Extract main content with improved selection
+        const pageText = await pageInstance.evaluate(() => {
+          const removeElements = (selector: string) => {
+            document.querySelectorAll(selector).forEach((el) => el.remove());
+          };
+
+          // Remove non-content elements
+          removeElements("script");
+          removeElements("style");
+          removeElements("nav");
+          removeElements("header");
+          removeElements("footer");
+
+          // Try to extract main content with fallbacks
+          const contentSelectors = [
+            "main",
+            "article",
+            '[role="main"]',
+            "#main-content",
+            ".main-content",
+            ".content",
+            "body",
+          ];
+
+          for (const selector of contentSelectors) {
+            const element = document.querySelector(selector);
+            if ((element as HTMLElement)?.innerText) {
+              return (element as HTMLElement).innerText;
+            }
+          }
+
+          return document.body.innerText;
+        });
+
+        await browser.close();
+
+        // Ensure URL is properly encoded
+        const cleanUrl = new URL(page.url).toString();
+
+        return {
+          url: cleanUrl,
+          title: page.name,
+          snippet: page.snippet,
+          content: pageText.substring(0, 2000),
+        };
+      } catch (error) {
+        console.error(`Error scraping ${page.url}:`, error);
+        return {
+          url: page.url,
+          title: page.name,
+          snippet: page.snippet,
+          content: page.snippet,
+        };
+      }
+    })
+  );
+
+  // Add user message to chat history after search
   await chatHistory.addMessage({
     content: lastHumanMessage.content,
     role: "user",
   });
 
-  const history = await chatHistory.getMessages();
-  const topHistory = history.slice(history.length - 30, history.length);
-  //var topHistory = "[ { role: 'user', content: '" + Prompt + "' } ]";
-  //console.log(topHistory);
+  // Construct comprehensive prompt with conversation context
+  const Prompt = `
+以前の会話の文脈:
+${topHistory.map((msg) => `${msg.role}: ${msg.content}`).join("\n")}
+
+最新の問い合わせ: ${lastHumanMessage.content}
+
+Web検索結果の概要:
+${webPageContents
+  .map(
+    (page) => `
+タイトル: ${page.title}
+URL: [${page.url}](${page.url})
+スニペット: ${page.snippet}
+
+詳細コンテンツ抜粋:
+${page.content.substring(0, 500)}...
+`
+  )
+  .join("\n\n")}
+
+上記の会話の文脈と検索結果を踏まえて、最新の質問に対して包括的かつ情報豊富な回答を生成してください。
+
+以下の形式でMarkdown形式の参考文献リストを必ず含めてください:
+
+### 参考文献
+- [タイトル1](URL1)
+- [タイトル2](URL2)
+`;
 
   try {
+    // Create OpenAI chat completion with conversation history
     const response = await openAI.chat.completions.create({
       messages: [
         {
           role: "system",
-          content: `あなたは ${AI_NAME} です。ユーザーからの質問に対して日本語で丁寧に回答します。
-          - 質問には正直かつ正確に答えます。`,
+          content: `あなたは ${process.env.NEXT_PUBLIC_AI_NAME} です。ユーザーからの質問に対して日本語で丁寧に回答します。以下の指示に従ってください：
+
+1. 質問には会話の文脈を考慮しながら、正直かつ正確に答えてください。
+
+2. Web検索結果を参考にしつつ、信頼性の高い情報を提供してください。
+
+3. 回答の最後には必ず「### 参考文献」という見出しを付け、その後に参照元を以下のMarkdown形式で列挙してください：
+   - [タイトルテキスト](URL)
+   - [タイトルテキスト](URL)
+
+4. 以前の会話内容と矛盾する情報を提供しないように注意してください。
+
+5. HTMLタグは一切使用せず、必ずMarkdown記法を使用してください。`,
         },
+        ...topHistory,
         {
           role: "user",
           content: Prompt,
-        }
+        },
       ],
-      //model: process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME,
       model: chatAPIModel,
       stream: true,
+      max_tokens: 2000,
+      temperature: 0.7,
     });
 
-
+    // Stream the response
     const stream = OpenAIStream(response, {
       async onCompletion(completion) {
         await chatHistory.addMessage({
@@ -116,8 +182,8 @@ export const ChatAPIWeb = async (props: PromptGPTProps) => {
         });
       },
     });
+
     return new StreamingTextResponse(stream);
-    
   } catch (e: unknown) {
     if (e instanceof Error) {
       return new Response(e.message, {

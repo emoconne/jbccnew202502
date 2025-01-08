@@ -1,7 +1,6 @@
 import ChatRow from "@/components/chat/chat-row";
 import { Card } from "@/components/ui/card";
 import { FC } from "react";
-import { AI_NAME } from "../theme/customise";
 import { FindAllChatsInThread, FindChatThreadByID } from "./reporting-service";
 
 interface Props {
@@ -20,7 +19,8 @@ export const ChatReportingUI: FC<Props> = async (props) => {
         <div className=" pb-[80px] ">
           {chats.map((message, index) => (
             <ChatRow
-              name={message.role === "user" ? chatThread.useName : AI_NAME}
+//              name={message.role === "user" ? chatThread.useName ?? "Default User" : process.env.NEXT_PUBLIC_AI_NAME}
+              name={message.role === "user" ? chatThread.useName || "Default User" : process.env.NEXT_PUBLIC_AI_NAME || "AI"}
               profilePicture={message.role === "user" ? "" : "/ai-icon.png"}
               message={message.content}
               type={message.role}

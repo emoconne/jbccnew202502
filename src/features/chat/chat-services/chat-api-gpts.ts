@@ -34,7 +34,7 @@ question: ${userQuestion}
 `, 'utf-8').toString();
 };
 
-export const ChatAPIDoc = async (props: PromptGPTProps) => {
+export const ChatAPIGPTs = async (props: PromptGPTProps) => {
   const { lastHumanMessage, id, chatThread } = await initAndGuardChatSession(
     props
   );

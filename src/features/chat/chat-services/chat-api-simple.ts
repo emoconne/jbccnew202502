@@ -1,6 +1,5 @@
 import { userHashedId } from "@/features/auth/helpers";
 import { OpenAIInstance } from "@/features/common/openai";
-import { AI_NAME } from "@/features/theme/customise";
 import { OpenAIStream, StreamingTextResponse } from "ai";
 import { initAndGuardChatSession } from "./chat-thread-service";
 import { CosmosDBChatMessageHistory } from "./cosmosdb/cosmosdb";
@@ -37,7 +36,7 @@ export const ChatAPISimple = async (props: PromptGPTProps) => {
       messages: [
         {
           role: "system",
-          content: `あなたは ${AI_NAME} です。ユーザーからの質問に対して日本語で丁寧に回答します。
+          content: `あなたは ${process.env.NEXT_PUBLIC_AI_NAME} です。ユーザーからの質問に対して日本語で丁寧に回答します。
           - 明確かつ簡潔な質問をし、丁寧かつ専門的な回答を返します。
           - 質問には正直かつ正確に答えます。`,
         },

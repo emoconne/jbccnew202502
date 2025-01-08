@@ -2,7 +2,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { GlobalConfigProvider } from "@/features/global-config/global-client-config-context";
 import { Providers } from "@/features/providers";
-import { AI_NAME } from "@/features/theme/customise";
 import { cn } from "@/lib/utils";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -12,8 +11,8 @@ export const dynamic = "force-dynamic";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: AI_NAME,
-  description: AI_NAME,
+  title: process.env.NEXT_PUBLIC_AI_NAME,
+  description: process.env.NEXT_PUBLIC_AI_NAME,
 };
 
 export default function RootLayout({

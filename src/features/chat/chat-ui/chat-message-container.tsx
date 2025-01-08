@@ -1,7 +1,6 @@
 import ChatLoading from "@/components/chat/chat-loading";
 import ChatRow from "@/components/chat/chat-row";
 import { useChatScrollAnchor } from "@/components/hooks/use-chat-scroll-anchor";
-import { AI_NAME } from "@/features/theme/customise";
 import { useSession } from "next-auth/react";
 import { useRef } from "react";
 import { useChatContext } from "./chat-context";
@@ -25,8 +24,9 @@ export const ChatMessageContainer = () => {
       <div className=" pb-[80px] flex flex-col justify-end flex-1">
         {messages.map((message, index) => (
           <ChatRow
-            name={message.role === "user" ? session?.user?.name! : AI_NAME}
-            profilePicture={
+          name={message.role === "user" ? session?.user?.name ?? "Unknown User" : process.env.NEXT_PUBLIC_AI_NAME ?? "AI"}
+  //        name={message.role === "user" ? session?.user?.name! : process.env.NEXT_PUBLIC_AI_NAME}
+          profilePicture={
               message.role === "user" ? session?.user?.image! : "/ai-icon.png"
             }
             message={message.content}
