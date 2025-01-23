@@ -17,8 +17,7 @@ export const StartNewChat: FC<Prop> = (props) => {
         </Typography>
         <div className="flex flex-col gap-2">
           <p className="text-sm text-muted-foreground">
-          このChatGPT搭載のAIチャットボットは、社内利用限定で公開されています。
-            まだまだ未熟なAIですが、皆様のご協力により、AIの成長を目指しています。
+          {process.env.NEXT_PUBLIC_AI_WELCOME_MSG_JA}
 
           </p>
           <p>下記の➕を押して会話を開始できます</p>

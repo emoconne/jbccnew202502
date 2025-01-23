@@ -131,7 +131,7 @@ export const ChatAPIGPTs = async (props: PromptGPTProps) => {
 const findRelevantDocuments = async (query: string, chatDoc: string) => {
   const filter = chatDoc === 'all'
     ? "chatType eq 'doc'"
-    : `chatType eq 'doc' and deptName eq '${chatDoc}'`;
+    : `chatType eq 'doc' and deptName eq 'sales'`;
 
   return await similaritySearchVectorWithScore(query, 10, {
     filter: filter,
