@@ -49,6 +49,11 @@ export const ChatDeptSelector: FC<Prop> = (props) => {
           control={<Radio />}
           label={<span className="text-sm text-muted-foreground">人事・ファシリティ</span>}
         />
+        <FormControlLabel
+          value="fi"
+          control={<Radio />}
+          label={<span className="text-sm text-muted-foreground">経理</span>}
+        />
       </RadioGroup>
       <div className="mt-2 text-center text-sm text-gray-600">
         {chatDocLabels[chatBody.chatDoc]}からデータを検索します

@@ -1,5 +1,5 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, MessageCircle, File, Globe } from "lucide-react";
+import { FileText, MessageCircle,File,Globe } from "lucide-react";
 import { FC } from "react";
 import { ChatType } from "../../chat-services/models";
 import { useChatContext } from "../chat-context";
@@ -12,14 +12,13 @@ interface Prop {
 export const ChatTypeSelector: FC<Prop> = (props) => {
   const { data: session } = useSession();
   const { chatBody, onChatTypeChange } = useChatContext();
-  const isAdmin = session?.user?.isAdmin;
 
   return (
     <Tabs
       defaultValue={chatBody.chatType}
       onValueChange={(value) => onChatTypeChange(value as ChatType)}
     >
-      <TabsList className={`grid w-full ${isAdmin ? "grid-cols-4" : "grid-cols-3"} h-12 items-stretch`}>
+      <TabsList className="grid w-full grid-cols-4 h-12 items-stretch">
         <TabsTrigger
           value="simple"
           className="flex gap-1"
@@ -40,17 +39,15 @@ export const ChatTypeSelector: FC<Prop> = (props) => {
           disabled={props.disable}
         >
           <FileText size={20} /> 文書要約
-        </TabsTrigger>
-        {isAdmin && (
-          <TabsTrigger
-            value="doc"
-            className="flex gap-1"
-            disabled={props.disable}
-          >
-            <FileText size={20} /> 社内FAQ
-          </TabsTrigger>
-        )}
-      </TabsList>
-    </Tabs>
+        </TabsTrigger>              
+        <TabsTrigger
+        value="doc"
+        className="flex gap-1"
+        disabled={props.disable}
+        >
+        <FileText size={20} /> 社内FAQ
+        </TabsTrigger>    
+       </TabsList>
+     </Tabs>
   );
 };
