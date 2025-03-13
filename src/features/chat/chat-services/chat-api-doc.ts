@@ -26,12 +26,29 @@ const CONTEXT_PROMPT = ({
 - 回答はできるだけ詳細に、明細まで記載した文章にしてください
 - 必ず回答の最後に引用を含め、最後にピリオドは付けないでください。
 - 引用は必ず以下の形式で記載してください：{%citation items=[{name:"NAME",id:"ID"}]/%}
+- 引用のNAMEには文書名を、IDには文書IDを正確に入れてください
+- 回答内にHTMLリンク（<a href>タグ）がある場合はMarkdownリンク形式 [テキスト](URL) に変換してください
 ----------------
 context:
 ${context}
 ----------------
 question: ${userQuestion}
 `, 'utf-8').toString();
+};
+
+// 曖昧なプロンプトを検出し、検索クエリを生成するためのプロンプト
+const QUERY_GENERATION_PROMPT = Buffer.from(`
+あなたは検索クエリ最適化の専門家です。ユーザーの質問から、関連文書を検索するための最適なクエリを生成してください。
+- 質問が曖昧な場合は、より具体的で検索に適したクエリを生成してください。
+- 質問が具体的な場合は、そのまま使用してください。
+- 検索クエリは簡潔で、重要なキーワードを含むものにしてください。
+- 検索クエリのみを返してください。余分な説明は不要です。
+`, 'utf-8').toString();
+
+// HTMLタグをMarkdownに変換する関数
+const convertHtmlToMarkdown = (text: string): string => {
+  // <a href="URL">テキスト</a> 形式のリンクをMarkdown [テキスト](URL) に変換
+  return text.replace(/<a\s+href="([^"]+)"[^>]*>([^<]+)<\/a>/g, '[$2]($1)');
 };
 
 export const ChatAPIDoc = async (props: PromptGPTProps) => {
@@ -45,7 +62,7 @@ export const ChatAPIDoc = async (props: PromptGPTProps) => {
   // モデル選択のロジックを簡略化
   const chatAPIModel = props.chatAPIModel === "GPT-3" 
     ? "gpt-35-turbo-16k" 
-    : "gpt-4o-mini";
+    : "gpt-4o-mini"; // 元のgpt-4o-miniモデルを維持
 
   const chatDoc = props.chatDoc;
 
@@ -55,10 +72,43 @@ export const ChatAPIDoc = async (props: PromptGPTProps) => {
   });
 
   const history = await chatHistory.getMessages();
-  const topHistory = history.slice(-30); // より簡潔な配列スライス
+  // より多くの履歴を保持（GPT-4oの高いトークン上限を活用）
+  const topHistory = history.slice(-50); 
+
+  // ユーザープロンプトが曖昧かどうかを判断し、最適なクエリを生成
+  let searchQuery = lastHumanMessage.content;
+  
+  if (searchQuery.length < 10 || !searchQuery.includes("?")) {
+    // プロンプトが短すぎる、または疑問符がない場合は曖昧と判断
+    try {
+      const queryGeneration = await openAI.chat.completions.create({
+        messages: [
+          {
+            role: "system",
+            content: QUERY_GENERATION_PROMPT,
+          },
+          {
+            role: "user",
+            content: lastHumanMessage.content,
+          },
+        ],
+        model: chatAPIModel,
+        temperature: 0.3,
+        max_tokens: 100,
+      });
+      
+      // 生成されたクエリを使用
+      if (queryGeneration.choices[0]?.message?.content) {
+        searchQuery = queryGeneration.choices[0].message.content.trim();
+      }
+    } catch (error) {
+      console.error("Query generation failed, using original query:", error);
+      // エラーが発生した場合は元のクエリを使用
+    }
+  }
 
   const relevantDocuments = await findRelevantDocuments(
-    lastHumanMessage.content,
+    searchQuery,
     chatDoc
   );
 
@@ -93,10 +143,14 @@ export const ChatAPIDoc = async (props: PromptGPTProps) => {
       ],
       model: chatAPIModel,
       stream: true,
+      max_tokens: 4000, // GPT-4oの高いトークン上限を活用
     });
 
     const stream = OpenAIStream(response, {
       async onCompletion(completion) {
+        // HTMLタグをMarkdownに変換
+        const formattedCompletion = convertHtmlToMarkdown(completion);
+        
         // 履歴保存時もエンコーディングを考慮
         await chatHistory.addMessage({
           content: Buffer.from(lastHumanMessage.content, 'utf-8').toString(),
@@ -105,7 +159,7 @@ export const ChatAPIDoc = async (props: PromptGPTProps) => {
 
         await chatHistory.addMessage(
           {
-            content: Buffer.from(completion, 'utf-8').toString(),
+            content: Buffer.from(formattedCompletion, 'utf-8').toString(),
             role: "assistant",
           },
           Buffer.from(context, 'utf-8').toString()

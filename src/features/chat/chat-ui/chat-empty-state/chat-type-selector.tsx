@@ -19,7 +19,7 @@ export const ChatTypeSelector: FC<Prop> = (props) => {
       defaultValue={chatBody.chatType}
       onValueChange={(value) => onChatTypeChange(value as ChatType)}
     >
-      <TabsList className={`grid w-full ${isAdmin ? "grid-cols-4" : "grid-cols-3"} h-12 items-stretch`}>
+      <TabsList className={`grid w-full grid-cols-4 h-12 items-stretch`}>
         <TabsTrigger
           value="simple"
           className="flex gap-1"
