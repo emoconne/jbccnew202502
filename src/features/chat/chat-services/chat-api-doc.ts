@@ -43,6 +43,7 @@ const QUERY_GENERATION_PROMPT = Buffer.from(`
 - 質問が具体的な場合は、そのまま使用してください。
 - 検索クエリは簡潔で、重要なキーワードを含むものにしてください。
 - 検索クエリのみを返してください。余分な説明は不要です。
+- 検索の際には、有給休暇を有給など短縮する場合があります。一般的な類義語を想定して加えてください
 `, 'utf-8').toString();
 
 // HTMLタグをMarkdownに変換する関数
@@ -60,9 +61,7 @@ export const ChatAPIDoc = async (props: PromptGPTProps) => {
   const userId = await userHashedId();
 
   // モデル選択のロジックを簡略化
-  const chatAPIModel = props.chatAPIModel === "GPT-3" 
-    ? "gpt-35-turbo-16k" 
-    : "gpt-4o-mini"; // 元のgpt-4o-miniモデルを維持
+  const chatAPIModel =  "gpt-4o-mini"
 
   const chatDoc = props.chatDoc;
 
@@ -118,8 +117,10 @@ export const ChatAPIDoc = async (props: PromptGPTProps) => {
       const content = Buffer.from(result.pageContent, 'utf-8')
         .toString()
         .replace(/(\r\n|\n|\r)/gm, "");
+      
+      // 「よくある質問：」の文言を削除し、インデックス番号は残す
       return Buffer.from(
-        `[${index}]. よくある質問: ${result.source}\nfile id: ${result.id}\n${content}`,
+        `[${index}]. ${result.source}\nfile id: ${result.id}\n${content}`,
         'utf-8'
       ).toString();
     })
