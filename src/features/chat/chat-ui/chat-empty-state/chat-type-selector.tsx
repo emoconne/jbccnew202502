@@ -41,16 +41,14 @@ export const ChatTypeSelector: FC<Prop> = (props) => {
         >
           <FileText size={20} /> 文書要約
         </TabsTrigger>
-        {isAdmin && (
-          <TabsTrigger
-            value="doc"
-            className="flex gap-1"
-            disabled={props.disable}
-          >
-            <FileText size={20} /> 社内FAQ
-          </TabsTrigger>
-        )}
-      </TabsList>
+        <TabsTrigger
+          value="doc"
+          className="flex gap-1"
+          disabled={props.disable}
+        >
+          <FileText size={20} /> 社内FAQ
+        </TabsTrigger>
+    </TabsList>
     </Tabs>
   );
 };
